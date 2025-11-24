@@ -11,20 +11,13 @@ Sentry Relay is a service that pushes some functionality from the Sentry SDKs as
 
 ## Installation
 
-### Add the repository (if published)
+### Install from OCI registry (ghcr.io)
 
 ```bash
-helm repo add sentry-relay https://yurzs.github.io/chart-sentry-relay
-helm repo update
+helm install my-relay oci://ghcr.io/yurzs/charts/sentry-relay --version 0.1.0
 ```
 
-### Install the chart
-
-```bash
-helm install my-relay sentry-relay/sentry-relay
-```
-
-Or install directly from source:
+### Install directly from source
 
 ```bash
 git clone https://github.com/Yurzs/chart-sentry-relay.git
