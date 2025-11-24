@@ -1,0 +1,214 @@
+# Default values for sentry-relay.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Number of relay replicas to deploy
+replicaCount: 1
+
+# -- Sentry Relay image configuration
+image:
+  # -- Image repository for Sentry Relay
+  repository: getsentry/relay
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion
+  tag: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+# -- Override chart name
+nameOverride: ""
+# -- Override fully qualified app name
+fullnameOverride: ""
+
+# -- Sentry Relay configuration
+# @default -- See values.yaml for default configuration
+relay:
+  # -- Relay mode: managed, static, proxy, or capture
+  # managed: requires upstream credentials (default)
+  # static: requires project configurations in config file
+  # proxy: forwards all events without processing
+  # capture: stores events locally for debugging
+  mode: managed
+  # -- Upstream Sentry server URL (required for managed/proxy modes)
+  upstream: "https://sentry.io"
+  # -- Host to bind to
+  host: "0.0.0.0"
+  # -- Port to listen on
+  port: 3000
+  # -- TLS configuration for relay (optional)
+  tls: {}
+    # privateKey: ""
+    # cert: ""
+  # -- Logging level: off, error, warn, info, debug, trace
+  logging:
+    level: info
+    # -- Log format: human or json
+    format: human
+  # -- Processing configuration
+  processing:
+    # -- Enable event processing (requires Kafka and Redis for self-hosted)
+    enabled: false
+    # -- Kafka configuration for processing mode
+    # kafka:
+    #   brokerList: []
+    # -- Redis URL for processing mode
+    # redis: ""
+  # -- Outcome configuration
+  outcomes:
+    # -- Emit outcomes to upstream
+    emitOutcomes: true
+    # -- Batch size for outcomes
+    batchSize: 1000
+    # -- Batch interval in milliseconds
+    batchInterval: 500
+
+# -- Additional relay configuration to merge into config.yml
+# This allows setting any relay configuration option
+extraConfig: {}
+
+# -- Service account configuration
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Automatically mount ServiceAccount API credentials
+  automount: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Annotations to add to the pods
+podAnnotations: {}
+# -- Labels to add to the pods
+podLabels: {}
+
+# -- Pod security context
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# -- Container security context
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# -- Service configuration
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service port
+  port: 3000
+
+# -- Ingress configuration
+ingress:
+  # -- Enable ingress
+  enabled: false
+  # -- Ingress class name
+  className: ""
+  # -- Ingress annotations
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  # -- Ingress hosts configuration
+  hosts:
+    - host: relay.example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  # -- Ingress TLS configuration
+  tls: []
+  #  - secretName: relay-tls
+  #    hosts:
+  #      - relay.example.local
+
+# -- Gateway API HTTPRoute configuration
+httpRoute:
+  # -- Enable HTTPRoute
+  enabled: false
+  # -- HTTPRoute annotations
+  annotations: {}
+  # -- Gateway references
+  parentRefs:
+    - name: gateway
+      sectionName: http
+  # -- Hostnames to match
+  hostnames:
+    - relay.example.local
+  # -- Routing rules
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+
+# -- Container resources
+resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 256Mi
+
+# -- Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /api/relay/healthcheck/live/
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# -- Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /api/relay/healthcheck/ready/
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# -- Autoscaling configuration
+autoscaling:
+  # -- Enable HPA
+  enabled: false
+  # -- Minimum replicas
+  minReplicas: 1
+  # -- Maximum replicas
+  maxReplicas: 10
+  # -- Target CPU utilization percentage
+  targetCPUUtilizationPercentage: 80
+  # -- Target memory utilization percentage
+  # targetMemoryUtilizationPercentage: 80
+
+# -- Additional volumes
+volumes: []
+
+# -- Additional volume mounts
+volumeMounts: []
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Relay credentials configuration
+# Credentials are generated on first run in managed mode
+# You can provide existing credentials or let the init container generate them
+credentials:
+  # -- Use existing secret for credentials
+  # Secret should contain 'credentials.json' key
+  existingSecret: ""
+  # -- Secret key containing credentials JSON
+  secretKey: "credentials.json"
