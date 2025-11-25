@@ -1,0 +1,326 @@
+# Default values for sentry-relay.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Number of relay replicas to deploy
+replicaCount: 1
+
+# -- Sentry Relay image configuration
+image:
+  # -- Image repository for Sentry Relay
+  repository: getsentry/relay
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion
+  tag: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+# -- Override chart name
+nameOverride: ""
+# -- Override fully qualified app name
+fullnameOverride: ""
+
+# -- Sentry Relay configuration
+# @default -- See values.yaml for default configuration
+relay:
+  # -- Relay mode: managed, static, proxy, or capture
+  # managed: requires upstream credentials (default)
+  # static: requires project configurations in config file
+  # proxy: forwards all events without processing
+  # capture: stores events locally for debugging
+  mode: managed
+  # -- Upstream Sentry server URL (required for managed/proxy modes)
+  upstream: "https://sentry.io"
+  # -- Host to bind to
+  host: "0.0.0.0"
+  # -- Port to listen on
+  port: 3000
+  # -- TLS configuration for relay (optional)
+  tls: {}
+    # privateKey: ""
+    # cert: ""
+  # -- Override project identifiers stated in client DSNs
+  overrideProjectIds: false
+
+# -- Logging configuration
+logging:
+  # -- Log level: off, error, warn, info, debug, trace
+  level: info
+  # -- Log format: auto, pretty, simplified, json
+  format: auto
+  # -- Write backtraces for all internal errors
+  enableBacktraces: true
+
+# -- HTTP settings for upstream requests
+http:
+  # -- Timeout for upstream requests in seconds
+  timeout: 5
+  # -- Timeout for establishing connections in seconds
+  connectionTimeout: 3
+  # -- Maximum interval between failed request retries in seconds
+  maxRetryInterval: 60
+  # -- Custom HTTP Host header to send to upstream
+  hostHeader: null
+
+# -- Caching configuration for project states
+cache:
+  # -- Cache timeout for project configurations in seconds
+  projectExpiry: 300
+  # -- Grace period after cache expiry while fetching new state in seconds
+  projectGracePeriod: 0
+  # -- Cache timeout for downstream Relay info in seconds
+  relayExpiry: 3600
+  # -- Maximum time to buffer incoming payloads in seconds
+  envelopeExpiry: 600
+  # -- Cache timeout for non-existing entries in seconds
+  missExpiry: 60
+  # -- Buffer timeout for batched queries in milliseconds
+  batchInterval: 100
+  # -- Maximum number of project configs to fetch at once
+  batchSize: 500
+  # -- Interval for watching local cache override files in seconds
+  fileInterval: 10
+  # -- Maximum number of incoming payloads to buffer
+  envelopeBufferSize: 1000
+  # -- Interval for evicting outdated project configs in seconds
+  evictionInterval: 60
+
+# -- Spooling configuration for envelope persistence
+spool:
+  envelopes:
+    # -- Path to spool file for on-disk spooling (null to disable)
+    path: null
+    # -- Maximum in-memory buffer size (e.g., "500MB")
+    maxMemorySize: "500MB"
+    # -- Maximum on-disk spool size (e.g., "500MB")
+    maxDiskSize: "500MB"
+    # -- Maximum connections for on-disk spooling
+    maxConnections: 20
+    # -- Minimum connections for on-disk spooling
+    minConnections: 10
+
+# -- Size limits for HTTP requests
+limits:
+  # -- Maximum concurrent connections upstream
+  maxConcurrentRequests: 100
+  # -- Maximum concurrent queries upstream
+  maxConcurrentQueries: 5
+  # -- Maximum event payload size (e.g., "1MiB")
+  maxEventSize: "1MiB"
+  # -- Maximum single attachment size (e.g., "100MiB")
+  maxAttachmentSize: "100MiB"
+  # -- Maximum combined attachments size (e.g., "100MiB")
+  maxAttachmentsSize: "100MiB"
+  # -- Maximum envelope payload size (e.g., "100MiB")
+  maxEnvelopeSize: "100MiB"
+  # -- Maximum session items per envelope
+  maxSessionCount: 100
+  # -- Maximum API request payload size (e.g., "20MiB")
+  maxApiPayloadSize: "20MiB"
+  # -- Maximum file upload payload size (e.g., "40MiB")
+  maxApiFileUploadSize: "40MiB"
+  # -- Maximum chunk upload payload size (e.g., "100MiB")
+  maxApiChunkUploadSize: "100MiB"
+  # -- Maximum threads per CPU/web worker
+  maxThreadCount: null
+  # -- Maximum query timeout across retries in seconds
+  queryTimeout: 30
+  # -- Maximum shutdown wait time in seconds
+  shutdownTimeout: 10
+
+# -- StatsD metrics configuration
+metrics:
+  # -- StatsD host:port (null to disable)
+  statsd: null
+  # -- Prefix for all metrics
+  prefix: "sentry.relay"
+  # -- Default tags for all metrics
+  defaultTags: {}
+  # -- Tag name for hostname (null to disable)
+  hostnameTag: null
+  # -- Buffer metrics before sending
+  buffering: true
+  # -- Global sample rate (0.0 to 1.0)
+  sampleRate: 1.0
+
+# -- Internal error reporting to Sentry
+sentry:
+  # -- Enable internal error reporting
+  enabled: false
+  # -- Sentry DSN for internal errors
+  dsn: ""
+
+# -- GeoIP configuration
+geoip:
+  # -- Path to MaxMind GeoIP City database file
+  path: null
+
+# -- Processing configuration (for self-hosted Sentry)
+processing:
+  # -- Enable event processing (requires Kafka and Redis)
+  enabled: false
+  # -- Kafka configuration
+  # kafka:
+  #   brokerList: []
+  # -- Redis URL
+  # redis: ""
+
+# -- Outcome configuration
+outcomes:
+  # -- Emit outcomes to upstream
+  emitOutcomes: true
+  # -- Batch size for outcomes
+  batchSize: 1000
+  # -- Batch interval in milliseconds
+  batchInterval: 500
+
+# -- Additional relay configuration to merge into config.yml
+# This allows setting any relay configuration option not covered above
+extraConfig: {}
+
+# -- Service account configuration
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Automatically mount ServiceAccount API credentials
+  automount: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Annotations to add to the pods
+podAnnotations: {}
+# -- Labels to add to the pods
+podLabels: {}
+
+# -- Pod security context
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# -- Container security context
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# -- Service configuration
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service port
+  port: 3000
+
+# -- Ingress configuration
+ingress:
+  # -- Enable ingress
+  enabled: false
+  # -- Ingress class name
+  className: ""
+  # -- Ingress annotations
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  # -- Ingress hosts configuration
+  hosts:
+    - host: relay.example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  # -- Ingress TLS configuration
+  tls: []
+  #  - secretName: relay-tls
+  #    hosts:
+  #      - relay.example.local
+
+# -- Gateway API HTTPRoute configuration
+httpRoute:
+  # -- Enable HTTPRoute
+  enabled: false
+  # -- HTTPRoute annotations
+  annotations: {}
+  # -- Gateway references
+  parentRefs:
+    - name: gateway
+      sectionName: http
+  # -- Hostnames to match
+  hostnames:
+    - relay.example.local
+  # -- Routing rules
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+
+# -- Container resources
+resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 256Mi
+
+# -- Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /api/relay/healthcheck/live/
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# -- Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /api/relay/healthcheck/ready/
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# -- Autoscaling configuration
+autoscaling:
+  # -- Enable HPA
+  enabled: false
+  # -- Minimum replicas
+  minReplicas: 1
+  # -- Maximum replicas
+  maxReplicas: 10
+  # -- Target CPU utilization percentage
+  targetCPUUtilizationPercentage: 80
+  # -- Target memory utilization percentage
+  # targetMemoryUtilizationPercentage: 80
+
+# -- Additional volumes
+volumes: []
+
+# -- Additional volume mounts
+volumeMounts: []
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# -- Relay credentials configuration
+# Credentials are generated on first run in managed mode
+# You can provide existing credentials or let the init container generate them
+credentials:
+  # -- Use existing secret for credentials
+  # Secret should contain 'credentials.json' key
+  existingSecret: ""
+  # -- Secret key containing credentials JSON
+  secretKey: "credentials.json"

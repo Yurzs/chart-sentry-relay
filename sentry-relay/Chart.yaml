@@ -1,0 +1,16 @@
+apiVersion: v2
+name: sentry-relay
+description: A Helm chart for deploying Sentry Relay to Kubernetes
+type: application
+version: 0.1.0
+appVersion: "25.5.1"
+keywords:
+  - sentry
+  - relay
+  - error-tracking
+  - monitoring
+home: https://github.com/getsentry/relay
+sources:
+  - https://github.com/getsentry/relay
+maintainers:
+  - name: Yury Sokov
