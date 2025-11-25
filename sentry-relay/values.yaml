@@ -40,31 +40,143 @@ relay:
   tls: {}
     # privateKey: ""
     # cert: ""
-  # -- Logging level: off, error, warn, info, debug, trace
-  logging:
-    level: info
-    # -- Log format: human or json
-    format: human
-  # -- Processing configuration
-  processing:
-    # -- Enable event processing (requires Kafka and Redis for self-hosted)
-    enabled: false
-    # -- Kafka configuration for processing mode
-    # kafka:
-    #   brokerList: []
-    # -- Redis URL for processing mode
-    # redis: ""
-  # -- Outcome configuration
-  outcomes:
-    # -- Emit outcomes to upstream
-    emitOutcomes: true
-    # -- Batch size for outcomes
-    batchSize: 1000
-    # -- Batch interval in milliseconds
-    batchInterval: 500
+  # -- Override project identifiers stated in client DSNs
+  overrideProjectIds: false
+
+# -- Logging configuration
+logging:
+  # -- Log level: off, error, warn, info, debug, trace
+  level: info
+  # -- Log format: auto, pretty, simplified, json
+  format: auto
+  # -- Write backtraces for all internal errors
+  enableBacktraces: true
+
+# -- HTTP settings for upstream requests
+http:
+  # -- Timeout for upstream requests in seconds
+  timeout: 5
+  # -- Timeout for establishing connections in seconds
+  connectionTimeout: 3
+  # -- Maximum interval between failed request retries in seconds
+  maxRetryInterval: 60
+  # -- Custom HTTP Host header to send to upstream
+  hostHeader: null
+
+# -- Caching configuration for project states
+cache:
+  # -- Cache timeout for project configurations in seconds
+  projectExpiry: 300
+  # -- Grace period after cache expiry while fetching new state in seconds
+  projectGracePeriod: 0
+  # -- Cache timeout for downstream Relay info in seconds
+  relayExpiry: 3600
+  # -- Maximum time to buffer incoming payloads in seconds
+  envelopeExpiry: 600
+  # -- Cache timeout for non-existing entries in seconds
+  missExpiry: 60
+  # -- Buffer timeout for batched queries in milliseconds
+  batchInterval: 100
+  # -- Maximum number of project configs to fetch at once
+  batchSize: 500
+  # -- Interval for watching local cache override files in seconds
+  fileInterval: 10
+  # -- Maximum number of incoming payloads to buffer
+  envelopeBufferSize: 1000
+  # -- Interval for evicting outdated project configs in seconds
+  evictionInterval: 60
+
+# -- Spooling configuration for envelope persistence
+spool:
+  envelopes:
+    # -- Path to spool file for on-disk spooling (null to disable)
+    path: null
+    # -- Maximum in-memory buffer size (e.g., "500MB")
+    maxMemorySize: "500MB"
+    # -- Maximum on-disk spool size (e.g., "500MB")
+    maxDiskSize: "500MB"
+    # -- Maximum connections for on-disk spooling
+    maxConnections: 20
+    # -- Minimum connections for on-disk spooling
+    minConnections: 10
+
+# -- Size limits for HTTP requests
+limits:
+  # -- Maximum concurrent connections upstream
+  maxConcurrentRequests: 100
+  # -- Maximum concurrent queries upstream
+  maxConcurrentQueries: 5
+  # -- Maximum event payload size (e.g., "1MiB")
+  maxEventSize: "1MiB"
+  # -- Maximum single attachment size (e.g., "100MiB")
+  maxAttachmentSize: "100MiB"
+  # -- Maximum combined attachments size (e.g., "100MiB")
+  maxAttachmentsSize: "100MiB"
+  # -- Maximum envelope payload size (e.g., "100MiB")
+  maxEnvelopeSize: "100MiB"
+  # -- Maximum session items per envelope
+  maxSessionCount: 100
+  # -- Maximum API request payload size (e.g., "20MiB")
+  maxApiPayloadSize: "20MiB"
+  # -- Maximum file upload payload size (e.g., "40MiB")
+  maxApiFileUploadSize: "40MiB"
+  # -- Maximum chunk upload payload size (e.g., "100MiB")
+  maxApiChunkUploadSize: "100MiB"
+  # -- Maximum threads per CPU/web worker
+  maxThreadCount: null
+  # -- Maximum query timeout across retries in seconds
+  queryTimeout: 30
+  # -- Maximum shutdown wait time in seconds
+  shutdownTimeout: 10
+
+# -- StatsD metrics configuration
+metrics:
+  # -- StatsD host:port (null to disable)
+  statsd: null
+  # -- Prefix for all metrics
+  prefix: "sentry.relay"
+  # -- Default tags for all metrics
+  defaultTags: {}
+  # -- Tag name for hostname (null to disable)
+  hostnameTag: null
+  # -- Buffer metrics before sending
+  buffering: true
+  # -- Global sample rate (0.0 to 1.0)
+  sampleRate: 1.0
+
+# -- Internal error reporting to Sentry
+sentry:
+  # -- Enable internal error reporting
+  enabled: false
+  # -- Sentry DSN for internal errors
+  dsn: ""
+
+# -- GeoIP configuration
+geoip:
+  # -- Path to MaxMind GeoIP City database file
+  path: null
+
+# -- Processing configuration (for self-hosted Sentry)
+processing:
+  # -- Enable event processing (requires Kafka and Redis)
+  enabled: false
+  # -- Kafka configuration
+  # kafka:
+  #   brokerList: []
+  # -- Redis URL
+  # redis: ""
+
+# -- Outcome configuration
+outcomes:
+  # -- Emit outcomes to upstream
+  emitOutcomes: true
+  # -- Batch size for outcomes
+  batchSize: 1000
+  # -- Batch interval in milliseconds
+  batchInterval: 500
 
 # -- Additional relay configuration to merge into config.yml
-# This allows setting any relay configuration option
+# This allows setting any relay configuration option not covered above
 extraConfig: {}
 
 # -- Service account configuration

@@ -15,25 +15,97 @@ data:
       tls:
         {{- toYaml .Values.relay.tls | nindent 8 }}
       {{- end }}
+      {{- if .Values.relay.overrideProjectIds }}
+      override_project_ids: {{ .Values.relay.overrideProjectIds }}
+      {{- end }}
     logging:
-      level: {{ .Values.relay.logging.level }}
-      {{- if .Values.relay.logging.format }}
-      format: {{ .Values.relay.logging.format }}
+      level: {{ .Values.logging.level }}
+      format: {{ .Values.logging.format }}
+      enable_backtraces: {{ .Values.logging.enableBacktraces }}
+    http:
+      timeout: {{ .Values.http.timeout }}
+      connection_timeout: {{ .Values.http.connectionTimeout }}
+      max_retry_interval: {{ .Values.http.maxRetryInterval }}
+      {{- if .Values.http.hostHeader }}
+      host_header: {{ .Values.http.hostHeader | quote }}
       {{- end }}
-    {{- if .Values.relay.processing.enabled }}
-    processing:
+    cache:
+      project_expiry: {{ .Values.cache.projectExpiry }}
+      project_grace_period: {{ .Values.cache.projectGracePeriod }}
+      relay_expiry: {{ .Values.cache.relayExpiry }}
+      envelope_expiry: {{ .Values.cache.envelopeExpiry }}
+      miss_expiry: {{ .Values.cache.missExpiry }}
+      batch_interval: {{ .Values.cache.batchInterval }}
+      batch_size: {{ .Values.cache.batchSize }}
+      file_interval: {{ .Values.cache.fileInterval }}
+      envelope_buffer_size: {{ .Values.cache.envelopeBufferSize }}
+      eviction_interval: {{ .Values.cache.evictionInterval }}
+    {{- if .Values.spool.envelopes.path }}
+    spool:
+      envelopes:
+        path: {{ .Values.spool.envelopes.path | quote }}
+        max_memory_size: {{ .Values.spool.envelopes.maxMemorySize | quote }}
+        max_disk_size: {{ .Values.spool.envelopes.maxDiskSize | quote }}
+        max_connections: {{ .Values.spool.envelopes.maxConnections }}
+        min_connections: {{ .Values.spool.envelopes.minConnections }}
+    {{- end }}
+    limits:
+      max_concurrent_requests: {{ .Values.limits.maxConcurrentRequests }}
+      max_concurrent_queries: {{ .Values.limits.maxConcurrentQueries }}
+      max_event_size: {{ .Values.limits.maxEventSize | quote }}
+      max_attachment_size: {{ .Values.limits.maxAttachmentSize | quote }}
+      max_attachments_size: {{ .Values.limits.maxAttachmentsSize | quote }}
+      max_envelope_size: {{ .Values.limits.maxEnvelopeSize | quote }}
+      max_session_count: {{ .Values.limits.maxSessionCount }}
+      max_api_payload_size: {{ .Values.limits.maxApiPayloadSize | quote }}
+      max_api_file_upload_size: {{ .Values.limits.maxApiFileUploadSize | quote }}
+      max_api_chunk_upload_size: {{ .Values.limits.maxApiChunkUploadSize | quote }}
+      {{- if .Values.limits.maxThreadCount }}
+      max_thread_count: {{ .Values.limits.maxThreadCount }}
+      {{- end }}
+      query_timeout: {{ .Values.limits.queryTimeout }}
+      shutdown_timeout: {{ .Values.limits.shutdownTimeout }}
+    {{- if .Values.metrics.statsd }}
+    metrics:
+      statsd: {{ .Values.metrics.statsd | quote }}
+      prefix: {{ .Values.metrics.prefix | quote }}
+      {{- if .Values.metrics.defaultTags }}
+      default_tags:
+        {{- toYaml .Values.metrics.defaultTags | nindent 8 }}
+      {{- end }}
+      {{- if .Values.metrics.hostnameTag }}
+      hostname_tag: {{ .Values.metrics.hostnameTag | quote }}
+      {{- end }}
+      buffering: {{ .Values.metrics.buffering }}
+      sample_rate: {{ .Values.metrics.sampleRate }}
+    {{- end }}
+    {{- if .Values.sentry.enabled }}
+    sentry:
       enabled: true
-      {{- if .Values.relay.processing.kafka }}
-      kafka_config:
-        {{- toYaml .Values.relay.processing.kafka | nindent 8 }}
-      {{- end }}
-      {{- if .Values.relay.processing.redis }}
-      redis: {{ .Values.relay.processing.redis | quote }}
+      {{- if .Values.sentry.dsn }}
+      dsn: {{ .Values.sentry.dsn | quote }}
       {{- end }}
     {{- end }}
-    {{- if .Values.relay.outcomes }}
+    {{- if .Values.geoip.path }}
+    geoip:
+      path: {{ .Values.geoip.path | quote }}
+    {{- end }}
+    {{- if .Values.processing.enabled }}
+    processing:
+      enabled: true
+      {{- if .Values.processing.kafka }}
+      kafka_config:
+        {{- toYaml .Values.processing.kafka | nindent 8 }}
+      {{- end }}
+      {{- if .Values.processing.redis }}
+      redis: {{ .Values.processing.redis | quote }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.outcomes }}
     outcomes:
-      {{- toYaml .Values.relay.outcomes | nindent 6 }}
+      emit_outcomes: {{ .Values.outcomes.emitOutcomes }}
+      batch_size: {{ .Values.outcomes.batchSize }}
+      batch_interval: {{ .Values.outcomes.batchInterval }}
     {{- end }}
     {{- if .Values.extraConfig }}
     {{- toYaml .Values.extraConfig | nindent 4 }}
