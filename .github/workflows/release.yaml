@@ -35,4 +35,4 @@ jobs:
 
       - name: Push chart to GHCR
         run: |
-          helm push sentry-relay-*.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/chart-sentry-relay
+          helm push sentry-relay-*.tgz oci://${{ env.REGISTRY }}/${GITHUB_REPOSITORY_OWNER,,}/chart-sentry-relay
